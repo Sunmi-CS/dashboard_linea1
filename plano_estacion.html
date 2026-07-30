@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Línea 1 — Master Plan de Mantenimiento</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --bg:#FAFAFA; --panel:#FFFFFF; --panel-alt:#F3F4F5; --border:#E4E6E8; --border-soft:#EDEEEF;
+    --text:#14161A; --text-dim:#565A60; --text-faint:#8B9096;
+    --nav:#F7F8F6; --green:#1E8E5A; --green-dim:#1E8E5A16;
+    --vif:#2F6FE4; --vif-strong:#1B4FBD; --vif-light:#AEC6F5;
+    --sen:#D9820F; --sen-strong:#B8650A; --sen-light:#F2C888;
+    --cat:#1E9E6E; --cat-strong:#12784F; --cat-light:#9FDFC2;
+    --sub:#7C3AED; --sub-strong:#5B21B6; --sub-light:#D8C5F7;
+    --tel:#0EA5B7; --tel-strong:#0B7C8A; --tel-light:#A8E0E8;
+    --fam:#D9740F; --fam-strong:#B85B0A; --fam-light:#F2C48A;
+    --opersac:#C0392B; --opersac-strong:#96281C; --opersac-light:#EAA79E;
+    --ok:#1E8E5A; --warn:#D9820F; --late:#D6423C;
+    --shadow:0 1px 2px rgba(16,24,32,0.03), 0 6px 16px rgba(16,24,32,0.05);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; font-size:13.5px; line-height:1.5;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .app{display:flex; min-height:100vh;}
+
+  .sidebar{width:230px; flex-shrink:0; background:var(--nav); border-right:1px solid var(--border); padding:16px 12px; display:flex; flex-direction:column; gap:2px;}
+  .brand{display:flex; align-items:center; gap:10px; padding:6px 8px 16px;}
+  .brand .logo{width:34px; height:34px; border-radius:9px; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px;}
+  .brand b{font-size:13.5px; font-weight:700; display:block;}
+  .brand span{font-size:10px; color:var(--text-faint);}
+  .navgroup-label{font-size:10px; font-weight:700; color:var(--text-faint); letter-spacing:0.5px; text-transform:uppercase; padding:14px 10px 6px;}
+  .navitem{display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text-dim); transition:background .12s;}
+  .navitem:hover{background:#EDEEEA;}
+  .navitem.active{background:var(--green-dim); color:var(--green); font-weight:600;}
+  .navitem .ic{width:18px; text-align:center;}
+  .navitem .chev{margin-left:auto; font-size:10px; opacity:0.6;}
+  .subnav{margin-left:14px; border-left:2px solid var(--border); padding-left:10px; display:flex; flex-direction:column; gap:1px; margin-bottom:4px;}
+  .subitem{padding:7px 10px; border-radius:7px; cursor:pointer; font-size:12.5px; color:var(--text-faint); transition:background .12s;}
+  .subitem:hover{background:#EDEEEA; color:var(--text);}
+  .subitem.active{background:var(--green-dim); color:var(--green); font-weight:600;}
+
+  .content{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{padding:16px 28px; border-bottom:1px solid var(--border); background:#fff;}
+  .topbar h1{font-size:18px; font-weight:700; letter-spacing:0.2px;}
+
+  main{flex:1; max-width:1280px; width:100%; margin:0 auto; padding:20px 28px 60px;}
+
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:16px; box-shadow:var(--shadow); transition:box-shadow .15s;}
+  .panel h2{font-size:12px; font-weight:700; margin-bottom:14px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;}
+
+  .kpi-row{display:grid; gap:12px; margin-bottom:12px;}
+  .kpi-row.c4{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .kpi-row.c6{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .kpi-row.c3{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .kpi{background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); transition:transform .12s;}
+  .kpi:hover{transform:translateY(-1px);}
+  .kpi .top{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .kpi .icon{width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;}
+  .kpi .l{font-size:11px; color:var(--text-faint); font-weight:600;}
+  .kpi .v{font-size:24px; font-weight:700; font-family:'JetBrains Mono',monospace;}
+  .kpi .sub{font-size:10.5px; color:var(--text-faint); margin-top:6px; display:flex; gap:10px;}
+  .kpi .sub .dot-ok{width:6px; height:6px; border-radius:50%; background:var(--ok); display:inline-block; margin-right:3px;}
+  .kpi .sub .dot-off{width:6px; height:6px; border-radius:50%; background:var(--text-faint); display:inline-block; margin-right:3px;}
+
+  .chip-row{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px;}
+  .chip{background:#fff; border:1px solid var(--border); color:var(--text-dim); font-size:11.5px; padding:6px 13px; border-radius:20px; cursor:pointer; transition:all .12s; display:inline-flex; align-items:center; gap:5px;}
+  .chip:hover{border-color:var(--green); color:var(--green);}
+  .chip.active{background:var(--green); color:#fff; border-color:var(--green); font-weight:600;}
+
+  select.selectbox, input.datebox{border:1px solid var(--border); border-radius:9px; padding:8px 12px; font-size:12.5px; font-family:'Inter',sans-serif; color:var(--text); background:#fff;}
+
+  .filters-panel{background:#fff; border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:var(--shadow);}
+  .filters-panel .frow{margin-bottom:14px;}
+  .filters-panel label{font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:6px;}
+  .toggle2{display:flex; gap:6px;}
+  .toggle2 .opt{flex:1; text-align:center; padding:8px; border:1px solid var(--border); border-radius:9px; cursor:pointer; font-size:12px; color:var(--text-dim);}
+  .toggle2 .opt.active{background:var(--green); color:#fff; border-color:var(--green); font-weight:600;}
+
+  .calgrid{width:100%; border-collapse:collapse; margin-top:8px;}
+  .calgrid th{font-size:10px; color:var(--text-faint); padding:4px; font-weight:600;}
+  .calgrid td{text-align:center; padding:2px;}
+  .calday{width:26px; height:26px; line-height:26px; border-radius:50%; cursor:pointer; font-size:11.5px; display:inline-block; color:var(--text-dim);}
+  .calday:hover{background:var(--panel-alt);}
+  .calday.sel{background:var(--green); color:#fff; font-weight:700;}
+  .calday.mut{color:var(--border);}
+
+  svg text{font-family:'JetBrains Mono',monospace; fill:var(--text-dim);}
+  .asset-mark{cursor:pointer; transition:opacity .1s;}
+  .asset-mark:hover{opacity:0.75;}
+
+  #leafletMap{height:340px; border-radius:12px; overflow:hidden; border:1px solid var(--border); margin-bottom:14px; position:relative; z-index:1;}
+  .station-dot{border-radius:50%; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+
+  table.data{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.data th{text-align:left; color:var(--text-faint); font-weight:700; padding:9px 10px; border-bottom:1px solid var(--border); font-size:10.5px; text-transform:uppercase;}
+  table.data td{padding:9px 10px; border-bottom:1px solid var(--border-soft); color:var(--text-dim);}
+  table.data tr:hover td{background:var(--panel-alt);}
+  td.code{color:var(--text); font-family:'JetBrains Mono',monospace; font-weight:600;}
+  .badge{font-size:10.5px; padding:3px 9px; border-radius:20px; font-weight:700;}
+  .badge.ok{background:#1E8E5A18; color:var(--ok);} .badge.warn{background:#D9820F18; color:var(--warn);} .badge.late{background:#D6423C18; color:var(--late);}
+
+  .hint{font-size:11px; color:var(--text-faint); margin-top:12px; border-top:1px solid var(--border); padding-top:10px;}
+  .stub{padding:50px 20px; text-align:center; color:var(--text-faint); font-size:13px;}
+
+  .overlay{position:fixed; inset:0; background:rgba(10,12,14,0.35); z-index:9999; display:none; align-items:center; justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff; border-radius:16px; width:460px; max-width:92vw; max-height:86vh; overflow-y:auto; padding:22px 24px; box-shadow:0 20px 60px rgba(0,0,0,0.25); animation:pop .15s ease;}
+  @keyframes pop{from{transform:scale(0.97); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .modal .mhead{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .modal .micon{width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .modal .mtitle{font-size:15.5px; font-weight:700;}
+  .modal .msub{font-size:11.5px; color:var(--text-faint);}
+  .modal .mclose{margin-left:auto; background:var(--panel-alt); border:none; border-radius:7px; width:28px; height:28px; cursor:pointer; font-size:13px; color:var(--text-dim);}
+  .mtabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:16px; flex-wrap:wrap;}
+  .mtab{padding:8px 4px; font-size:11px; font-weight:600; color:var(--text-faint); cursor:pointer; border-bottom:2px solid transparent; margin-right:14px;}
+  .mtab.active{color:var(--green); border-color:var(--green);}
+  .mrow{display:flex; justify-content:space-between; font-size:12.5px; padding:9px 0; border-bottom:1px solid var(--border-soft); gap:14px;}
+  .mrow .k{color:var(--text-faint); flex-shrink:0;}
+  .mrow .v{color:var(--text); font-weight:600; text-align:right;}
+  .mini-table{width:100%; font-size:11px; border-collapse:collapse;}
+  .mini-table th{text-align:left; color:var(--text-faint); font-weight:700; padding:6px 4px; font-size:9.5px; text-transform:uppercase; border-bottom:1px solid var(--border);}
+  .mini-table td{padding:6px 4px; border-bottom:1px solid var(--border-soft);}
+  .mtab-section{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:10px;}
+
+  .tooltip-box{position:fixed; z-index:9000; background:#14161A; color:#fff; font-size:11.5px; padding:8px 11px; border-radius:8px; pointer-events:none; box-shadow:0 6px 16px rgba(0,0,0,0.25); max-width:220px;}
+  .subhead{font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin:14px 0 8px;}
+  .subhead:first-child{margin-top:0;}
+
+  .diagram-row{background:var(--panel-alt); border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:8px;}
+  .cmp-col{flex:1; min-width:0;}
+  .cmp-month{font-size:11px; font-weight:700; color:var(--text-dim); margin:14px 0 6px; text-transform:uppercase;}
+
+  .filters-toggle-row{display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap; position:relative;}
+  .filters-btn{border:1px solid var(--border); background:#fff; border-radius:9px; padding:9px 16px; font-size:12px; font-weight:700; color:var(--text-dim); cursor:pointer; display:flex; align-items:center; gap:8px; text-transform:uppercase; letter-spacing:0.3px;}
+  .filters-btn:hover{border-color:var(--green); color:var(--green);}
+  .filters-dropdown{position:absolute; top:calc(100% + 8px); right:0; z-index:40; width:300px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="content">
+    <div class="topbar"><h1 id="pageTitle">Dashboard</h1></div>
+    <main id="main"></main>
+  </div>
+</div>
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()"><div class="modal" id="modalBody"></div></div>
+
+<script>
+/* ================= MODELO BASE ================= */
+const STATIONS = ['VES','PIN','PUM','VMA','MAX','SJN','ATO','JCH','AYA','CAB','ANG','SBS','CUL','ARR','GAM','MGR','ELA','PBM','CDA','PDS','LJD','LPT','SCA','SMT','SRO','BAY'];
+const STATION_NAMES = {VES:'Villa El Salvador',PIN:'Parque Industrial',PUM:'Pumacahua',VMA:'Villa María',MAX:'María Auxiliadora',SJN:'San Juan',ATO:'Atocongo',JCH:'Jorge Chávez',AYA:'Ayacucho',CAB:'Cabitos',ANG:'Angamos',SBS:'San Borja Sur',CUL:'La Cultura',ARR:'Arriola',GAM:'Gamarra',MGR:'Miguel Grau',ELA:'El Ángel',PBM:'Presbítero Maestro',CDA:'Caja de Agua',PDS:'Pirámide del Sol',LJD:'Los Jardines',LPT:'Los Postes',SCA:'San Carlos',SMT:'San Martín',SRO:'Santa Rosa',BAY:'Bayóvar'};
+// Coordenadas aproximadas / ilustrativas (no oficiales) interpoladas sobre la ruta real VES → BAY
+const STATION_COORDS = (()=>{
+  const anchors = [[-12.2196,-76.9440],[-12.1620,-76.9720],[-12.1050,-77.0010],[-12.0430,-77.0290],[-11.9975,-77.0104]];
+  const out=[];
+  for(let i=0;i<STATIONS.length;i++){
+    const t = i/(STATIONS.length-1)*(anchors.length-1);
+    const i0 = Math.floor(t), f = t-i0;
+    const a = anchors[i0], b = anchors[Math.min(i0+1,anchors.length-1)];
+    out.push([a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]);
+  }
+  return out;
+})();
+const LINE_KM = 34.6;
+const CATS = ['VIF','SEN','CAT'];
+const CAT_LABEL = {VIF:'VIF · Vía Ferroviaria', SEN:'SEÑ · Señalización', CAT:'CAT · Catenaria'};
+const SEGMENTS = STATIONS.length-1;
+const VIA_RAILS = [{via:'Impar',riel:'R1'},{via:'Impar',riel:'R2'},{via:'Par',riel:'R1'},{via:'Par',riel:'R2'}];
+const TODAY_REF = new Date(2026,6,20);
+
+function hash(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h; }
+function stationPK(i){ return (i/(STATIONS.length-1))*LINE_KM; }
+function pkFormat(km){ const tm=Math.round(km*1000); return Math.floor(tm/1000)+'+'+String(tm%1000).padStart(3,'0')+'.00'; }
+function kmShort(km){ const tm=Math.round(km*1000); return 'Km '+Math.floor(tm/1000)+'+'+String(tm%1000).padStart(3,'0'); }
+function fmtDate(d){ return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+function mondayOf(d){ const dt=new Date(d); const day=(dt.getDay()+6)%7; dt.setDate(dt.getDate()-day); dt.setHours(0,0,0,0); return dt; }
+function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function zonaDeEstacion(idx){ const f=idx/(STATIONS.length-1); return f<0.34?'Zona Sur':(f<0.67?'Zona Centro':'Zona Norte'); }
+
+/* Motor genérico: para CUALQUIER fecha/rango, determina si VIF/SEN/CAT están activos en un tramo+riel,
+   y con qué intensidad (Ejecutada = fuerte, Pendiente = claro, Retrasada = rojo). Permite Año/Trimestre/
+   Semestre/Semana/Día y comparar cualquier periodo sin depender de una lista fija de meses. */
+function segCatInfo(startDate, endDate, railKey, seg, cat){
+  let count=0, total=0, worst=null;
+  const rank={Retrasada:3, Pendiente:2, Ejecutada:1};
+  let d = new Date(startDate);
+  while(d<=endDate){
+    total++;
+    const dk = dateKey(d);
+    const h = hash(dk+'|'+railKey+'|'+seg+'|'+cat) % 100;
+    if(h<16){
+      count++;
+      const eh = hash(dk+'|'+railKey+'|'+seg+'|'+cat+'|est') % 100;
+      const est = d<TODAY_REF ? (eh<85?'Ejecutada':'Retrasada') : 'Pendiente';
+      if(!worst || rank[est]>rank[worst]) worst = est;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return {count, total, estado:worst};
+}
+function deptShade(cat, est){
+  if(est==='Retrasada') return 'var(--late)';
+  if(est==='Ejecutada') return `var(--${cat.toLowerCase()}-strong)`;
+  return `var(--${cat.toLowerCase()}-light)`;
+}
+const CAT_SHAPE = {VIF:'circle', SEN:'triangle', CAT:'square', SUB:'circle', TEL:'triangle', FAM:'square', OPERSAC:'diamond'};
+function catMarker(cat, cx, cy, r, color, extra){
+  const c = color || `var(--${cat.toLowerCase()})`;
+  const common = `fill="${c}" stroke="#fff" stroke-width="1.3" class="asset-mark" ${extra||''}`;
+  const shape = CAT_SHAPE[cat];
+  if(shape==='circle') return `<circle cx="${cx}" cy="${cy}" r="${r}" ${common}/>`;
+  if(shape==='square') return `<rect x="${cx-r*0.85}" y="${cy-r*0.85}" width="${r*1.7}" height="${r*1.7}" rx="1.5" ${common}/>`;
+  if(shape==='diamond') return `<polygon points="${cx},${cy-r*1.2} ${cx+r*1.2},${cy} ${cx},${cy+r*1.2} ${cx-r*1.2},${cy}" ${common}/>`;
+  const h=r*1.15;
+  return `<polygon points="${cx},${cy-h} ${cx-h*0.98},${cy+h*0.72} ${cx+h*0.98},${cy+h*0.72}" ${common}/>`;
+}
+function catMarkerInline(cat){ return `<svg width="12" height="12" viewBox="0 0 20 20" style="vertical-align:middle;">${catMarker(cat,10,10,7,`var(--${cat.toLowerCase()})`)}</svg>`; }
+
+/* ================= Registro de Activos (para Activos/Actividades/Dashboard) ================= */
+const ASSET_TYPES = [
+  {type:'Cambio', dept:'VIF', shape:'diamond'}, {type:'Junta', dept:'VIF', shape:'hexagon'},
+  {type:'Señal', dept:'SEN', shape:'circle'}, {type:'Circuito de vía', dept:'SEN', shape:'triangle'},
+  {type:'Detector', dept:'SEN', shape:'octagon'}, {type:'Catenaria', dept:'CAT', shape:'square'},
+];
+const ACT_DESCS = ['Inspección visual de catenarias','Toma de parámetros','Lavado de aisladores','Mantenimiento de aisladores de sección','Mantenimiento regulaciones automáticas','Mantenimiento de suspensiones','Mantenimiento de conexiones a tierra','Medición de hilo de contacto'];
+const FREQS = ['M1','M3','M6','M12'];
+const ESTADOS_ACT = ['Programada','Ejecutada','Pendiente','Retrasada'];
+const RESP = ['Cuadrilla A','Cuadrilla B','Cuadrilla C','Cuadrilla D'];
+const NOTAS_TEC = {
+  VIF:['Revisión de sujeciones y geometría de vía','Verificación de holguras en aparatos de vía','Inspección de estado de rieles y soldaduras'],
+  SEN:['Revisión de lentes y circuito de alimentación principal','Calibración de circuitos de vía','Verificación de detección de trenes'],
+  CAT:['Verificación de tensión mecánica del hilo de contacto','Inspección de aisladores y conexiones a tierra','Medición de desgaste del hilo de contacto'],
+};
+const ASSETS = [];
+function buildActivities(seed, codigo, estacionIdx){
+  const numAct = 6+(hash(seed+'n')%3);
+  const activities=[];
+  for(let a=0;a<numAct;a++){
+    const ah=hash(seed+'-act'+a);
+    const dayOffset=(ah>>6)%540;
+    const fecha=new Date(2026,6,1); fecha.setDate(fecha.getDate()+dayOffset);
+    const frecuencia = FREQS[(ah>>2)%FREQS.length];
+    const estado = ESTADOS_ACT[(ah>>4)%4];
+    const meses = frecuencia==='M1'?1:frecuencia==='M3'?3:frecuencia==='M6'?6:12;
+    const proximaFecha = new Date(fecha); proximaFecha.setMonth(proximaFecha.getMonth()+meses);
+    const hhProg = 1+(ah%3);
+    const hhEjec = hhProg*(3+(ah%2));
+    const zonaNum = 50+(ah%40);
+    const zona = 'ZONA '+zonaNum+'-'+STATIONS[estacionIdx];
+    activities.push({codigo:codigo+'-A'+(a+1), descripcion:ACT_DESCS[ah%ACT_DESCS.length]+' - '+STATIONS[estacionIdx],
+      codigoActivo:zona, frecuencia, estado, responsable:RESP[ah%RESP.length], fecha, proximaFecha, hhProg, hhEjec});
+  }
+  return activities;
+}
+(function generar(){
+  const counters={VIF:0,SEN:0,CAT:0};
+  for(let i=0;i<52;i++){
+    const h=hash('asset'+i);
+    const at=ASSET_TYPES[h%ASSET_TYPES.length];
+    const segIdx=h%(STATIONS.length-1);
+    const frac=((h>>3)%97)/97;
+    const pk=stationPK(segIdx)+(stationPK(segIdx+1)-stationPK(segIdx))*frac;
+    const estIdx = frac<0.5?segIdx:segIdx+1;
+    counters[at.dept]++;
+    const codigo = at.dept+'-'+String(counters[at.dept]).padStart(3,'0');
+    const notas = NOTAS_TEC[at.dept];
+    ASSETS.push({codigo, tipo:at.type, dept:at.dept, shape:at.shape, descripcion:at.type+' '+codigo,
+      estacionIdx:estIdx, estacion:STATION_NAMES[STATIONS[estIdx]], pk, pkLabel:pkFormat(pk),
+      via:(h>>7)%2===0?'Impar':'Par', riel:(h>>8)%2===0?'R1':'R2',
+      areaGeografica: STATIONS[estIdx]+' ('+STATION_NAMES[STATIONS[estIdx]]+') - '+zonaDeEstacion(estIdx),
+      proyecto:'Mantenimiento Preventivo '+TODAY_REF.getFullYear(),
+      nivelItem:'Nivel '+(1+(h%3))+' | Item '+(1+(h%9))+'.'+(1+((h>>2)%5))+'.'+(1+((h>>4)%4)),
+      notaTecnica: notas[h%notas.length],
+      activities: buildActivities('asset'+i, codigo, estIdx)});
+  }
+})();
+function allActivities(){ const out=[]; ASSETS.forEach(a=>a.activities.forEach(act=>out.push({...act, asset:a}))); return out; }
+
+/* Construye un "activo virtual" para un tramo/vía/riel/categoría que no tenga un activo real asociado,
+   de modo que el panel de "más información" siempre pueda mostrarse con la misma estructura. */
+function buildPseudoAsset(cat, via, riel, seg, estadoTramo){
+  const seed = 'seg'+cat+via+riel+seg;
+  const h = hash(seed);
+  const estIdx = frac2idx(seg,h);
+  const at = ASSET_TYPES.find(t=>t.dept===cat) || ASSET_TYPES[0];
+  const notas = NOTAS_TEC[cat];
+  const numDentroDept = 100+(h%50);
+  const codigo = cat+' '+numDentroDept;
+  const pk = stationPK(seg)+(stationPK(seg+1)-stationPK(seg))*0.5;
+  return {
+    codigo, tipo:at.type, dept:cat, shape:at.shape, descripcion:at.type+' '+codigo, isVirtual:true,
+    estacionIdx:estIdx, estacion:STATION_NAMES[STATIONS[estIdx]], pk, pkLabel:pkFormat(pk),
+    via, riel,
+    areaGeografica: STATIONS[estIdx]+' ('+STATION_NAMES[STATIONS[estIdx]]+') - '+zonaDeEstacion(estIdx),
+    proyecto:'Mantenimiento Preventivo '+TODAY_REF.getFullYear(),
+    nivelItem:'Nivel '+(1+(h%3))+' | Item '+(1+(h%9))+'.'+(1+((h>>2)%5))+'.'+(1+((h>>4)%4)),
+    notaTecnica: notas[h%notas.length],
+    activities: buildActivities(seed, codigo, estIdx),
+  };
+}
+function frac2idx(seg,h){ return (h%2===0)? seg : Math.min(seg+1, STATIONS.length-1); }
+
+/* ================= Registro de Activos — ESTACIONES =================
+   Basado en el plano de referencia (Estación Javier Prado): una estación se organiza
+   en niveles apilados verticalmente en vez de un recorrido lineal como Vía Principal.
+   - Calle: accesos y control de ingreso → OPERSAC
+   - Mezzanine: salas técnicas (Sala SUB, Sala TEL, Zona Técnica, Área de Extensión) → SUB y TEL
+   - Andén: equipos electromecánicos (escaleras, ascensor) → FAM
+*/
+const CAT_EST = ['SUB','TEL','FAM','OPERSAC'];
+const CAT_LABEL_EST = {SUB:'SUB · Subestación Eléctrica', TEL:'TEL · Telecomunicaciones', FAM:'FAM · Fuerza, Alumbrado y Mecánica', OPERSAC:'OPERSAC · Operaciones y Sistema de Acceso y Cobro'};
+const STATION_LEVELS = ['Calle','Mezzanine','Andén'];
+const STATION_DEPT_LEVEL = {OPERSAC:'Calle', SUB:'Mezzanine', TEL:'Mezzanine', FAM:'Andén'};
+const STATION_ZONES = {
+  Calle: ['Acceso Principal','Acceso Secundario','Control de Ingreso'],
+  Mezzanine: ['Sala SUB','Sala TEL','Zona Técnica','Área de Extensión'],
+  Andén: ['Andén Norte','Andén Sur','Escaleras Eléctricas','Ascensor'],
+};
+const STATION_NOTAS_TEC = {
+  SUB:['Verificación de tableros de baja tensión','Inspección de transformadores y protecciones','Medición de parámetros eléctricos'],
+  TEL:['Revisión de central telefónica y radio','Verificación de circuito cerrado de TV','Prueba de sistemas de comunicación'],
+  FAM:['Mantenimiento de escaleras eléctricas','Revisión de ascensores y ventilación','Inspección de iluminación de estación'],
+  OPERSAC:['Revisión de torniquetes y validadores','Verificación de sistema de cobro','Inspección de cámaras de control de acceso'],
+};
+const STATION_ASSETS = [];
+(function generarEstaciones(){
+  const counters = {SUB:0, TEL:0, FAM:0, OPERSAC:0};
+  STATIONS.forEach((code, si)=>{
+    CAT_EST.forEach(dept=>{
+      const numAssets = 1+(hash('est'+code+dept+'n')%2);
+      for(let k=0;k<numAssets;k++){
+        counters[dept]++;
+        const h = hash('est'+code+dept+k);
+        const nivel = STATION_DEPT_LEVEL[dept];
+        const zonas = STATION_ZONES[nivel];
+        const zona = zonas[h%zonas.length];
+        const codigo = dept+'-'+String(counters[dept]).padStart(3,'0');
+        const notas = STATION_NOTAS_TEC[dept];
+        STATION_ASSETS.push({
+          codigo, dept, tipo:dept, descripcion:dept+' '+codigo,
+          estacionIdx:si, estacion:STATION_NAMES[code], nivel, zona,
+          areaGeografica: code+' ('+STATION_NAMES[code]+') - '+nivel+' - '+zona,
+          proyecto:'Mantenimiento Preventivo '+TODAY_REF.getFullYear(),
+          nivelItem:'Nivel '+(1+(h%3))+' | Item '+(1+(h%9))+'.'+(1+((h>>2)%5))+'.'+(1+((h>>4)%4)),
+          notaTecnica: notas[h%notas.length],
+          activities: buildActivities('est'+code+dept+k, codigo, si),
+        });
+      }
+    });
+  });
+})();
+function allStationActivities(){ const out=[]; STATION_ASSETS.forEach(a=>a.activities.forEach(act=>out.push({...act, asset:a}))); return out; }
+
+/* ================= Estado global ================= */
+let state = {
+  section:'dashboard', groupOpen:{via:true, estaciones:true, patios:false, talleres:false},
+  resumenYear:2026,
+  mapYear:2026, mapPeriodMode:'trimestre', mapPeriod:'Todos', mapCalMode:null, mapCalDate:null,
+  calViewYear:2026, calViewMonth:0,
+  selMode:'intervalo', fromIdx:0, toIdx:STATIONS.length-1, manualStations:[],
+  mapCat:'Todos',
+  cmpCat:'Todos', cmpBaseYear:2026, cmpCompYear:2025,
+  cmpFiltersOpen:false, cmpPeriodMode:'trimestre', cmpPeriod:'Todos', cmpCalMode:null, cmpCalDate:null,
+  cmpCalViewYear:2026, cmpCalViewMonth:0, cmpFromIdx:0, cmpToIdx:STATIONS.length-1,
+  estYear:2026, estCat:'Todos', estStationIdx:0, estPlanoLevel:'Todos', estPeriodMode:'trimestre', estPeriod:'Todos',
+  modal:null, modalTab:'ubicacion',
+};
+
+const NAV = [
+  {id:'dashboard', label:'Dashboard', ic:'📊'},
+];
+const INFRA = [
+  {id:'via', label:'Vía Principal', ic:'🛤️', sub:[
+    {id:'resumen', label:'Resumen'}, {id:'mapa', label:'Mapa'}, {id:'comparar', label:'Comparar'},
+    {id:'activos', label:'Activos'}, {id:'actividades', label:'Actividades'},
+  ]},
+  {id:'estaciones', label:'Estaciones', ic:'🚉', sub:[
+    {id:'est-resumen', label:'Resumen'}, {id:'est-selector', label:'Selector'}, {id:'est-plano', label:'Plano'},
+    {id:'est-activos', label:'Activos'}, {id:'est-actividades', label:'Actividades'},
+  ]},
+  {id:'patios', label:'Patios', ic:'🅿️', sub:[]},
+  {id:'talleres', label:'Talleres', ic:'🔧', sub:[]},
+];
+
+function goSection(id){ state.section=id; render(); }
+function toggleGroup(id){ state.groupOpen[id]=!state.groupOpen[id]; render(); }
+
+function renderSidebar(){
+  let html = `<div class="brand"><div class="logo">🚆</div><div><b>Línea 1</b><span>Master Plan de Mantenimiento</span></div></div>`;
+  html += `<div class="navgroup-label">Dashboards</div>`;
+  NAV.forEach(n=> html += `<div class="navitem ${state.section===n.id?'active':''}" onclick="goSection('${n.id}')"><span class="ic">${n.ic}</span>${n.label}</div>`);
+  html += `<div class="navgroup-label">Infraestructura</div>`;
+  INFRA.forEach(g=>{
+    const isActive = g.sub.some(s=>s.id===state.section);
+    const hasSub = g.sub.length>0;
+    html += `<div class="navitem ${isActive?'active':''}" onclick="${hasSub?`toggleGroup('${g.id}')`:`goSection('${g.id}')`}"><span class="ic">${g.ic}</span>${g.label}${hasSub?`<span class="chev">${state.groupOpen[g.id]?'▾':'▸'}</span>`:''}</div>`;
+    if(hasSub && state.groupOpen[g.id]){
+      html += `<div class="subnav">${g.sub.map(s=>`<div class="subitem ${state.section===s.id?'active':''}" onclick="goSection('${s.id}')">${s.label}</div>`).join('')}</div>`;
+    }
+  });
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+/* ================= DASHBOARD ================= */
+function renderDashboard(){
+  const catCounts = {VIF:ASSETS.filter(a=>a.dept==='VIF').length, SEN:ASSETS.filter(a=>a.dept==='SEN').length, CAT:ASSETS.filter(a=>a.dept==='CAT').length};
+  const viaTotal = ASSETS.length;
+  const estTotal = STATION_ASSETS.length;
+  const estActivos = STATION_ASSETS.filter(a=>!a.activities.some(x=>x.estado==='Retrasada')).length;
+  const cards = [
+    {label:'Vía Principal', ic:'🛤️', total:viaTotal, activos:Math.round(viaTotal*0.94), color:'var(--green)'},
+    {label:'Estaciones', ic:'🚉', total:estTotal, activos:estActivos, color:'#2F6FE4'},
+    {label:'Patios', ic:'🅿️', total:8000, activos:7920, color:'#D9820F'},
+    {label:'Talleres', ic:'🔧', total:4000, activos:3960, color:'#8B5CF6'},
+  ];
+  const cardsHtml = cards.map(c=>`
+    <div class="kpi">
+      <div class="top"><div class="icon" style="background:${c.color}18; color:${c.color};">${c.ic}</div><div class="l">${c.label}</div></div>
+      <div class="v">${c.total.toLocaleString()}</div>
+      <div class="sub"><span><span class="dot-ok"></span>Activos ${c.activos.toLocaleString()}</span><span><span class="dot-off"></span>Inactivos ${(c.total-c.activos).toLocaleString()}</span></div>
+    </div>`).join('');
+
+  const acts = allActivities();
+  const estados4=['Programada','Ejecutada','Pendiente','Retrasada'];
+  const cEst = e=>acts.filter(a=>a.estado===e).length;
+  const maxA = Math.max(1,...estados4.map(cEst));
+  const barsHtml = estados4.map(e=>{ const v=cEst(e); const pct=(v/maxA*100).toFixed(0);
+    const col = e==='Ejecutada'?'var(--ok)':e==='Retrasada'?'var(--late)':e==='Pendiente'?'var(--warn)':'var(--green)';
+    return `<div style="margin-bottom:12px;"><div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:4px;"><span>${e}</span><span class="mono">${v}</span></div><div style="background:var(--panel-alt); border-radius:4px; height:10px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:${col};"></div></div></div>`;
+  }).join('');
+
+  const R=42,CIRC=2*Math.PI*R; let off=0, arcs='';
+  [['VIF',catCounts.VIF,'var(--vif)'],['SEN',catCounts.SEN,'var(--sen)'],['CAT',catCounts.CAT,'var(--cat)']].forEach(([n,v,c])=>{
+    const len = viaTotal>0?(v/viaTotal)*CIRC:0;
+    arcs += `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${c}" stroke-width="16" stroke-dasharray="${len} ${CIRC-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;
+    off += len;
+  });
+
+  document.getElementById('main').innerHTML = `
+    <div class="kpi-row c4">${cardsHtml}</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="panel"><h2>Distribución Vía Principal por departamento</h2>
+        <div style="display:flex; align-items:center; gap:20px;">
+          <svg width="120" height="120" viewBox="0 0 120 120">${arcs}<text x="60" y="56" text-anchor="middle" font-size="18" font-weight="700">${viaTotal}</text><text x="60" y="72" text-anchor="middle" font-size="9" fill="var(--text-faint)">activos</text></svg>
+          <div style="font-size:12px; display:flex; flex-direction:column; gap:6px;">
+            <span>🔵 VIF — ${catCounts.VIF}</span><span>🟠 SEÑ — ${catCounts.SEN}</span><span>🟢 CAT — ${catCounts.CAT}</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel"><h2>Actividades por estado (todas las categorías)</h2>${barsHtml}</div>
+    </div>
+    <div class="panel"><p class="hint" style="border:none; padding-top:0;">Estaciones, Patios y Talleres muestran cifras de referencia — sus páginas de detalle se habilitarán cuando se defina su estructura de datos.</p></div>`;
+}
+
+/* ================= RESUMEN ================= */
+function renderResumen(){
+  const year = state.resumenYear;
+  const acts = allActivities().filter(a=>a.fecha.getFullYear()===year);
+  const total = ASSETS.length;
+  const vif=ASSETS.filter(a=>a.dept==='VIF').length, sen=ASSETS.filter(a=>a.dept==='SEN').length, cat=ASSETS.filter(a=>a.dept==='CAT').length;
+  const cEst = e=>acts.filter(a=>a.estado===e).length;
+  const ejecutadas=cEst('Ejecutada'), programadas=cEst('Programada'), pendientes=cEst('Pendiente'), vencidas=cEst('Retrasada');
+  const cumplimiento = acts.length? ((ejecutadas/(acts.length))*100).toFixed(1) : '0.0';
+
+  const R=38,CIRC=2*Math.PI*R; let off=0, arcs='';
+  [['VIF',vif,'var(--vif)'],['SEN',sen,'var(--sen)'],['CAT',cat,'var(--cat)']].forEach(([n,v,c])=>{
+    const len=total>0?(v/total)*CIRC:0;
+    arcs += `<circle cx="55" cy="55" r="${R}" fill="none" stroke="${c}" stroke-width="14" stroke-dasharray="${len} ${CIRC-len}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`;
+    off+=len;
+  });
+
+  const freqCounts = FREQS.map(f=>({f, n:acts.filter(a=>a.frecuencia===f).length}));
+  const maxF = Math.max(1,...freqCounts.map(x=>x.n));
+  const freqHtml = freqCounts.map(x=>`
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px;">
+      <div style="width:70px; font-size:11px; color:var(--text-dim);">${x.f}</div>
+      <div style="flex:1; background:var(--panel-alt); border-radius:4px; height:9px; overflow:hidden;"><div style="width:${(x.n/maxF*100).toFixed(0)}%; height:100%; background:var(--green);"></div></div>
+      <div style="width:26px; text-align:right; font-size:11px;" class="mono">${x.n}</div>
+    </div>`).join('');
+
+  // mapa térmico lineal — 8 estaciones representativas
+  const sampleIdx = [0,4,8,11,14,17,21,25];
+  const heat = sampleIdx.map(i=>{
+    const h = hash('heat'+year+i)%100;
+    const st = h<70?{c:'var(--ok)',l:'OK'}:h<90?{c:'var(--warn)',l:'Próximo'}:{c:'var(--late)',l:'Vencido'};
+    return `<div style="text-align:center; flex:1;"><div style="width:9px; height:9px; border-radius:50%; background:${st.c}; margin:0 auto 4px;"></div><div style="font-size:10.5px; font-weight:700;">${STATIONS[i]}</div><div style="font-size:9px; color:var(--text-faint);">PK ${pkFormat(stationPK(i))}</div></div>`;
+  }).join('');
+
+  // estaciones con mayor carga y tramos críticos (a partir de datos reales)
+  const stationLoad = STATIONS.map((s,i)=>({s, i, n: ASSETS.filter(a=>a.estacionIdx===i).reduce((n,a)=>n+a.activities.length,0)})).sort((a,b)=>b.n-a.n).slice(0,3);
+  const maxSL = Math.max(1,...stationLoad.map(x=>x.n));
+  const segLoad = Array.from({length:SEGMENTS},(_,s)=>({s, n:ASSETS.filter(a=>Math.floor(a.pk/LINE_KM*SEGMENTS)===s).reduce((n,a)=>n+a.activities.length,0)})).sort((a,b)=>b.n-a.n).slice(0,3);
+  const maxSeg = Math.max(1,...segLoad.map(x=>x.n));
+  const sevColor = i => i===0?'var(--late)':i===1?'var(--warn)':'var(--ok)';
+  const sevLabel = i => i===0?'(Alta)':i===1?'(Media)':'(Normal)';
+
+  const critAssets = ASSETS.map(a=>({...a, n:a.activities.length, worst:a.activities.some(x=>x.estado==='Retrasada')?'Vencida':(a.activities.some(x=>x.estado==='Pendiente')?'Próxima':'OK')}))
+    .sort((a,b)=>b.n-a.n).slice(0,4);
+
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <label style="font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase;">Año</label>
+      <select class="selectbox" style="margin-top:6px;" onchange="state.resumenYear=Number(this.value); render();">
+        <option value="2026" ${year===2026?'selected':''}>2026</option>
+        <option value="2027" ${year===2027?'selected':''}>2027</option>
+      </select>
+    </div>
+    <div class="kpi-row c6">
+      <div class="kpi"><div class="l">Total Activos</div><div class="v">${total.toLocaleString()}</div><div class="sub">VIF ${vif} · SEÑ ${sen} · CAT ${cat}</div></div>
+      <div class="kpi"><div class="l">Programadas</div><div class="v" style="color:var(--vif);">${programadas}</div></div>
+      <div class="kpi"><div class="l">Ejecutadas</div><div class="v" style="color:var(--ok);">${ejecutadas}</div><div class="sub">${cumplimiento}% cumplimiento</div></div>
+      <div class="kpi"><div class="l">Pendientes</div><div class="v" style="color:var(--warn);">${pendientes}</div></div>
+      <div class="kpi"><div class="l">Vencidas</div><div class="v" style="color:var(--late);">${vencidas}</div></div>
+      <div class="kpi"><div class="l">Cumplimiento</div><div class="v" style="color:var(--green);">${cumplimiento}%</div><div class="sub">Meta 90.0%</div></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="panel"><h2>1. Distribución y carga por dpto.</h2>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg width="100" height="100" viewBox="0 0 110 110">${arcs}<text x="55" y="59" text-anchor="middle" font-size="15" font-weight="700">${total}</text></svg>
+          <div style="font-size:11.5px; display:flex; flex-direction:column; gap:5px;"><span>🔵 VIF ${vif}</span><span>🟠 SEÑ ${sen}</span><span>🟢 CAT ${cat}</span></div>
+        </div>
+      </div>
+      <div class="panel"><h2>2. Estado de actividades</h2>
+        <div style="font-size:12px; margin-bottom:8px;">Ejecutadas <b class="mono" style="float:right; color:var(--ok);">${ejecutadas}</b></div>
+        <div style="font-size:12px; margin-bottom:8px;">Pendientes <b class="mono" style="float:right; color:var(--warn);">${pendientes}</b></div>
+        <div style="font-size:12px;">Vencidas <b class="mono" style="float:right; color:var(--late);">${vencidas}</b></div>
+      </div>
+      <div class="panel"><h2>3. Frecuencia de planificación</h2>${freqHtml}</div>
+    </div>
+    <div class="panel"><h2>4. Mapa térmico lineal de mantenimiento — Vía Principal</h2>
+      <div style="display:flex; gap:4px;">${heat}</div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="panel"><h2>Estaciones con mayor carga</h2>
+        ${stationLoad.map(x=>`<div style="margin-bottom:9px;"><div style="font-size:11.5px; margin-bottom:3px;">${STATION_NAMES[STATIONS[x.i]]} (${x.s})</div><div style="background:var(--panel-alt); border-radius:4px; height:9px;"><div style="width:${(x.n/maxSL*100).toFixed(0)}%; height:100%; background:#2FA5D6; border-radius:4px;"></div></div><div style="font-size:10px; color:var(--text-faint); text-align:right;">${x.n} ots</div></div>`).join('')}
+      </div>
+      <div class="panel"><h2>Ranking tramos críticos</h2>
+        ${segLoad.map((x,i)=>`<div style="margin-bottom:9px;"><div style="font-size:11.5px; margin-bottom:3px;">Tramo ${STATIONS[x.s]}–${STATIONS[x.s+1]}</div><div style="background:var(--panel-alt); border-radius:4px; height:9px;"><div style="width:${(x.n/maxSeg*100).toFixed(0)}%; height:100%; background:${sevColor(i)}; border-radius:4px;"></div></div><div style="font-size:10px; color:var(--text-faint); text-align:right;">${x.n} ots ${sevLabel(i)}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="panel"><h2>5. Activos críticos y mayor frecuencia</h2>
+      <table class="data"><thead><tr><th>Código</th><th>Tipo</th><th>PK</th><th>OTS</th><th>Estado</th></tr></thead>
+      <tbody>${critAssets.map(a=>`<tr onclick="openAsset('${a.codigo}')"><td class="code">${a.codigo}</td><td>${a.tipo}</td><td class="mono">${a.pkLabel}</td><td>${a.n}</td><td><span class="badge ${a.worst==='OK'?'ok':a.worst==='Próxima'?'warn':'late'}">${a.worst}</span></td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+/* ================= MAPA ================= */
+let leafletMap=null, leafletMarkers=[];
+function ensureMap(){
+  const el = document.getElementById('leafletMap');
+  if(!el) return;
+  if(leafletMap){ leafletMap.remove(); leafletMap=null; }
+  leafletMap = L.map('leafletMap', {scrollWheelZoom:false}).setView([-12.11,-76.99], 11.3);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap', maxZoom:16}).addTo(leafletMap);
+  const latlngs = STATION_COORDS.map(c=>[c[0],c[1]]);
+  L.polyline(latlngs, {color:'#1E8E5A', weight:3, opacity:0.6}).addTo(leafletMap);
+  leafletMarkers=[];
+  STATIONS.forEach((code,i)=>{
+    const info = mapStationAggregate(i);
+    const selected = isStationSelected(i);
+    const radius = 5 + Math.min(9, info.total);
+    const marker = L.circleMarker(STATION_COORDS[i], {
+      radius, color:'#fff', weight:2, fillColor: selected? '#1E8E5A' : (info.total>0?'#2F6FE4':'#B9BBBF'), fillOpacity:0.9,
+    }).addTo(leafletMap);
+    marker.bindTooltip(`<b>${code}</b> · ${STATION_NAMES[code]}<br>${info.total} activos en el periodo`, {direction:'top'});
+    marker.on('click', ()=> onStationClick(i));
+    leafletMarkers.push(marker);
+  });
+}
+function mapStationAggregate(i){
+  const {start,end} = mapDateRange();
+  let total=0;
+  const segs = [i>0?i-1:0, Math.min(i,SEGMENTS-1)];
+  new Set(segs).forEach(s=>{ VIA_RAILS.forEach(r=> CATS.forEach(c=>{
+    if(state.mapCat!=='Todos' && state.mapCat!==c) return;
+    const info = segCatInfo(start,end,r.via+'-'+r.riel,s,c); total += info.count;
+  })); });
+  return {total};
+}
+function isStationSelected(i){
+  if(state.selMode==='manual') return state.manualStations.includes(i);
+  return i>=state.fromIdx && i<=state.toIdx;
+}
+function onStationClick(i){
+  if(state.selMode==='manual'){
+    const idx = state.manualStations.indexOf(i);
+    if(idx>=0) state.manualStations.splice(idx,1); else state.manualStations.push(i);
+  } else {
+    if(state.fromIdx===state.toIdx || (state.fromIdx!==0||state.toIdx!==STATIONS.length-1)===false){ state.fromIdx=i; state.toIdx=i; }
+    else if(i<state.fromIdx){ state.fromIdx=i; } else { state.toIdx=i; }
+  }
+  render();
+}
+function mapDateRange(){
+  const year = state.mapYear;
+  let start,end;
+  if(state.mapPeriod && state.mapPeriod!=='Todos'){
+    if(state.mapPeriodMode==='trimestre'){ const q=Number(state.mapPeriod.slice(1)); start=new Date(year,(q-1)*3,1); end=new Date(year,q*3,0,23,59,59,999); }
+    else { const s=Number(state.mapPeriod.slice(1)); start=new Date(year,(s-1)*6,1); end=new Date(year,s*6,0,23,59,59,999); }
+  } else { start=new Date(year,0,1); end=new Date(year,11,31,23,59,59,999); }
+  if(state.mapCalMode==='dia' && state.mapCalDate){ start=new Date(state.mapCalDate); start.setHours(0,0,0,0); end=new Date(state.mapCalDate); end.setHours(23,59,59,999); }
+  else if(state.mapCalMode==='semana' && state.mapCalDate){ const mo=mondayOf(state.mapCalDate); start=mo; end=new Date(mo); end.setDate(end.getDate()+6); end.setHours(23,59,59,999); }
+  return {start,end};
+}
+function setMapYear(y){ state.mapYear=Number(y); state.mapCalViewYear=Number(y); render(); }
+function setPeriodMode(m){ state.mapPeriodMode=m; state.mapPeriod='Todos'; render(); }
+function setMapPeriod(p){ state.mapPeriod=p; render(); }
+function setSelMode(m){ state.selMode=m; render(); }
+function setMapCat(c){ state.mapCat=c; render(); }
+function openCalendar(mode){ state.mapCalMode = state.mapCalMode===mode? null : mode; render(); }
+function calShift(delta){ let m=state.calViewMonth+delta, y=state.calViewYear; if(m<0){m=11;y--;} if(m>11){m=0;y++;} state.calViewMonth=m; state.calViewYear=y; render(); }
+function selCalDay(y,m,d){ state.mapCalDate=new Date(y,m,d); render(); }
+function resetRange(){ state.fromIdx=0; state.toIdx=STATIONS.length-1; state.manualStations=[]; render(); }
+
+function renderCalendar(){
+  const y=state.calViewYear, m=state.calViewMonth;
+  const first=new Date(y,m,1); const startDow=(first.getDay()+6)%7;
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  let cells='', d=1;
+  for(let row=0; row<6 && d<=daysInMonth; row++){
+    cells += '<tr>';
+    for(let col=0; col<7; col++){
+      if(row===0 && col<startDow){ cells+='<td></td>'; }
+      else if(d>daysInMonth){ cells+='<td></td>'; }
+      else {
+        const sel = state.mapCalDate && state.mapCalDate.getFullYear()===y && state.mapCalDate.getMonth()===m && state.mapCalDate.getDate()===d;
+        cells += `<td><span class="calday ${sel?'sel':''}" onclick="selCalDay(${y},${m},${d})">${d}</span></td>`;
+        d++;
+      }
+    }
+    cells+='</tr>';
+  }
+  return `<div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+    <button onclick="calShift(-1)" style="border:none; background:none; cursor:pointer; font-size:13px;">‹</button>
+    <b style="font-size:12px;">${monthNames[m]} ${y}</b>
+    <button onclick="calShift(1)" style="border:none; background:none; cursor:pointer; font-size:13px;">›</button>
+  </div>
+  <table class="calgrid"><thead><tr><th>L</th><th>M</th><th>W</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead><tbody>${cells}</tbody></table>`;
+}
+
+function renderLinearDiagram(startDate,endDate,fromIdx,toIdx,catFilter,selectedStations){
+  const from=fromIdx, to=toIdx;
+  const n=to-from+1;
+  const spacing = n>1? 580/(n-1) : 580;
+  const x = i => 50+(i-from)*spacing;
+  const intervalStep = n>14 ? Math.ceil(n/10) : 1;
+  const detailed = n<=6;
+
+  let labels='', ticks='';
+  for(let i=from;i<=to;i++){
+    const isEdge=i===from||i===to;
+    if(isEdge || (i-from)%intervalStep===0){
+      const ly=(i-from)%2===0?30:16;
+      labels += `<text x="${x(i)}" y="${ly}" text-anchor="middle" font-size="10" font-weight="${isEdge?700:400}">${STATIONS[i]}</text>`;
+      labels += `<line x1="${x(i)}" y1="${ly+4}" x2="${x(i)}" y2="46" stroke="var(--border)" stroke-width="1"/>`;
+    }
+  }
+  const ROWS=[{via:'Impar',riel:'R1',y:80},{via:'Impar',riel:'R2',y:100},{via:'Par',riel:'R1',y:190},{via:'Par',riel:'R2',y:210}];
+  let sleepers='', rowsSvg='';
+  for(let px=x(from); px<=x(to); px+=13){
+    sleepers += `<line x1="${px}" y1="72" x2="${px}" y2="108" stroke="#C7C9CD" stroke-width="1"/>`;
+    sleepers += `<line x1="${px}" y1="182" x2="${px}" y2="218" stroke="#C7C9CD" stroke-width="1"/>`;
+  }
+  ['Impar','Par'].forEach(via=>{
+    const y = via==='Impar'?90:200;
+    rowsSvg += `<text x="6" y="${y+4}" font-size="11" font-weight="700">${via}</text>`;
+  });
+  ROWS.forEach(row=>{ rowsSvg += `<line x1="${x(from)}" y1="${row.y}" x2="${x(to)}" y2="${row.y}" stroke="#111214" stroke-width="2" stroke-linecap="round"/>`; });
+
+  let marks='';
+  for(let s=from; s<to; s++){
+    if(selectedStations && !(selectedStations.includes(s) || selectedStations.includes(s+1))) continue;
+    ROWS.forEach(row=>{
+      const railKey = row.via+'-'+row.riel;
+      const rowY = row.y;
+      let offsetI=0;
+      CATS.forEach(cat=>{
+        if(catFilter!=='Todos' && catFilter!==cat) return;
+        const info = segCatInfo(startDate,endDate,railKey,s,cat);
+        if(info.count===0) return;
+        const r = 3 + Math.min(6, info.count);
+        const mx = (x(s)+x(s+1))/2 + offsetI*10;
+        offsetI++;
+        const color = deptShade(cat, info.estado);
+        const title = `${STATIONS[s]}–${STATIONS[s+1]} · ${row.via} ${row.riel} · ${cat} · ${info.estado}`;
+        marks += catMarker(cat, mx, rowY, r, color, `onmousemove="showTip(evt,'${title.replace(/'/g,"\\'")}')" onmouseleave="hideTip()" onclick="openSegModal('${cat}','${railKey}',${s},'${info.estado}')"`);
+        if(detailed){
+          marks += `<text x="${mx}" y="${rowY+(row.riel==='R1'?-10:16)}" font-size="7" text-anchor="middle" fill="var(--text-faint)">${cat}</text>`;
+        }
+      });
+    });
+  }
+
+  return `<svg width="100%" viewBox="0 0 660 230" role="img">${labels}${sleepers}${rowsSvg}${marks}</svg>`;
+}
+
+let tipEl=null;
+function showTip(evt, text){
+  if(!tipEl){ tipEl=document.createElement('div'); tipEl.className='tooltip-box'; document.body.appendChild(tipEl); }
+  tipEl.textContent = text; tipEl.style.left=(evt.clientX+14)+'px'; tipEl.style.top=(evt.clientY+10)+'px'; tipEl.style.display='block';
+}
+function hideTip(){ if(tipEl) tipEl.style.display='none'; }
+
+/* ================= MODAL "MÁS INFORMACIÓN" (unificado para activos y tramos) ================= */
+function openSegModal(cat, railKey, seg, estadoTramo){
+  const [via,riel] = railKey.split('-');
+  const existing = ASSETS.find(a=> a.dept===cat && a.via===via && a.riel===riel && Math.floor(a.pk/LINE_KM*SEGMENTS)===seg);
+  const asset = existing || buildPseudoAsset(cat, via, riel, seg, estadoTramo);
+  openAssetModalObj(asset);
+}
+function openAsset(codigo){
+  const a = ASSETS.find(x=>x.codigo===codigo);
+  if(a) openAssetModalObj(a);
+}
+function openAssetModalObj(asset){
+  state.modal = {asset};
+  state.modalTab='ubicacion';
+  document.getElementById('overlay').classList.add('open');
+  renderAssetModal();
+}
+function closeModal(){ state.modal=null; document.getElementById('overlay').classList.remove('open'); }
+function setModalTabAsset(t){ state.modalTab=t; renderAssetModal(); }
+
+function renderAssetModal(){
+  const a = state.modal && state.modal.asset; if(!a) return;
+  const color = `var(--${a.dept.toLowerCase()})`;
+  const tabs=[{id:'ubicacion',label:'Ubicación y contexto'},{id:'detalle',label:'Detalle de actividad planificada'},{id:'fechas',label:'Registro de fechas'}];
+  let body='';
+  if(state.modalTab==='ubicacion'){
+    const rutaLine = a.via
+      ? `<div class="mrow"><span class="k">Ruta del Activo</span><span class="v">Vía ${a.via} - ${kmShort(a.pk)}</span></div>`
+      : `<div class="mrow"><span class="k">Ubicación en Estación</span><span class="v">${a.nivel} · ${a.zona}</span></div>`;
+    body = `
+      ${rutaLine}
+      <div class="mrow"><span class="k">Área Geográfica</span><span class="v">${a.areaGeografica}</span></div>
+      <div class="mrow"><span class="k">Proyecto / Contrato</span><span class="v">${a.proyecto}</span></div>
+      <div class="mrow"><span class="k">Nivel / Item</span><span class="v">${a.nivelItem}</span></div>
+      <div class="mrow"><span class="k">Nota Técnica</span><span class="v">${a.notaTecnica}</span></div>`;
+  } else if(state.modalTab==='detalle'){
+    body = `<div class="mtab-section">📋 Actividades asociadas</div>
+      <table class="mini-table"><thead><tr><th>Descripción Actividad</th><th>Código Activo</th><th>Frecuencia</th><th>HH Prog.</th><th>HH Ejec.</th></tr></thead><tbody>
+      ${a.activities.map(act=>`<tr><td>${act.descripcion}</td><td>${act.codigoActivo}</td><td>${act.frecuencia}</td><td>${act.hhProg}</td><td>${act.hhEjec}</td></tr>`).join('')}
+      </tbody></table>`;
+  } else {
+    body = `<div class="mtab-section">🗂 Registro de fechas de actividad</div>
+      <table class="mini-table"><thead><tr><th>Actividades</th><th>Última Fecha</th><th>Próxima Fecha</th><th>Estado</th></tr></thead><tbody>
+      ${a.activities.map(act=>{
+        const disp = act.estado==='Ejecutada' ? {t:'Completado',c:'ok'} : act.estado==='Retrasada' ? {t:'Vencido',c:'late'} : {t:'Pendiente',c:'warn'};
+        return `<tr><td>${act.descripcion}</td><td>${fmtDate(act.fecha)}</td><td>${fmtDate(act.proximaFecha)}</td><td><span class="badge ${disp.c}">${disp.t}</span></td></tr>`;
+      }).join('')}
+      </tbody></table>`;
+  }
+  document.getElementById('modalBody').innerHTML = `
+    <div class="mhead"><div class="micon" style="background:${color}18;">${catMarker(a.dept,15,15,9,color)}</div>
+      <div><div class="mtitle">${a.codigo}</div><div class="msub">${(a.notaTecnica||'').toUpperCase()}</div></div>
+      <button class="mclose" onclick="closeModal()">✕</button></div>
+    <div class="mtabs">${tabs.map(t=>`<div class="mtab ${state.modalTab===t.id?'active':''}" onclick="setModalTabAsset('${t.id}')">${t.label}</div>`).join('')}</div>
+    ${body}`;
+}
+
+function renderMapa(){
+  const {start,end} = mapDateRange();
+  const selectedStations = state.selMode==='manual' ? state.manualStations : Array.from({length:state.toIdx-state.fromIdx+1},(_,i)=>state.fromIdx+i);
+  const fromIdx = state.selMode==='manual' ? Math.min(...(state.manualStations.length?state.manualStations:[0])) : state.fromIdx;
+  const toIdx = state.selMode==='manual' ? Math.max(...(state.manualStations.length?state.manualStations:[STATIONS.length-1])) : state.toIdx;
+
+  document.getElementById('main').innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+      <div>
+        <div class="chip-row">
+          <span class="kpi" style="padding:10px 16px; display:flex; align-items:center; gap:8px;">🔵 VIF <b class="mono">${ASSETS.filter(a=>a.dept==='VIF').length}</b></span>
+          <span class="kpi" style="padding:10px 16px; display:flex; align-items:center; gap:8px;">🟠 SEÑ <b class="mono">${ASSETS.filter(a=>a.dept==='SEN').length}</b></span>
+          <span class="kpi" style="padding:10px 16px; display:flex; align-items:center; gap:8px;">🟢 CAT <b class="mono">${ASSETS.filter(a=>a.dept==='CAT').length}</b></span>
+        </div>
+        <div id="leafletMap"></div>
+        <div class="chip-row">
+          <div class="chip ${state.mapCat==='Todos'?'active':''}" onclick="setMapCat('Todos')">Todos</div>
+          <div class="chip ${state.mapCat==='VIF'?'active':''}" onclick="setMapCat('VIF')">🔵 VIF</div>
+          <div class="chip ${state.mapCat==='SEN'?'active':''}" onclick="setMapCat('SEN')">🟠 SEÑ</div>
+          <div class="chip ${state.mapCat==='CAT'?'active':''}" onclick="setMapCat('CAT')">🟢 CAT</div>
+        </div>
+        <div class="panel">
+          <h2>Vía Impar / Vía Par — ${detailedLabel()}</h2>
+          ${renderLinearDiagram(start,end,fromIdx,toIdx,state.mapCat,state.selMode==='manual'?selectedStations:null)}
+          <p class="hint">El tamaño de cada figura representa la cantidad de actividad detectada en el periodo; el tono indica si ya está ejecutada (fuerte), pendiente (claro), o vencida (rojo). Haz clic para ver el detalle.</p>
+        </div>
+      </div>
+      <div class="filters-panel">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;">Filtros</div>
+        <div class="frow"><label>Año</label>
+          <select class="selectbox" style="width:100%;" onchange="setMapYear(this.value)">
+            <option value="2026" ${state.mapYear===2026?'selected':''}>2026</option>
+            <option value="2027" ${state.mapYear===2027?'selected':''}>2027</option>
+          </select>
+        </div>
+        <div class="frow"><label>Ver por</label>
+          <div class="toggle2">
+            <div class="opt ${state.mapPeriodMode==='trimestre'?'active':''}" onclick="setPeriodMode('trimestre')">Trimestre</div>
+            <div class="opt ${state.mapPeriodMode==='semestre'?'active':''}" onclick="setPeriodMode('semestre')">Semestre</div>
+          </div>
+        </div>
+        <div class="frow"><label>${state.mapPeriodMode==='trimestre'?'Trimestre':'Semestre'}</label>
+          <select class="selectbox" style="width:100%;" onchange="setMapPeriod(this.value)">
+            <option value="Todos">Todos</option>
+            ${state.mapPeriodMode==='trimestre'
+              ? ['T1 (ENE-FEB-MAR)','T2 (ABR-MAY-JUN)','T3 (JUL-AGO-SEP)','T4 (OCT-NOV-DIC)'].map((l,i)=>`<option value="T${i+1}" ${state.mapPeriod==='T'+(i+1)?'selected':''}>${l}</option>`).join('')
+              : ['S1 (ENE-JUN)','S2 (JUL-DIC)'].map((l,i)=>`<option value="S${i+1}" ${state.mapPeriod==='S'+(i+1)?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="frow"><label>Calendario</label>
+          <div class="toggle2">
+            <div class="opt ${state.mapCalMode==='semana'?'active':''}" onclick="openCalendar('semana')">Semana</div>
+            <div class="opt ${state.mapCalMode==='dia'?'active':''}" onclick="openCalendar('dia')">Día</div>
+          </div>
+          ${state.mapCalMode ? renderCalendar() : ''}
+        </div>
+        <div class="frow"><label>Selección de estaciones</label>
+          <div class="toggle2">
+            <div class="opt ${state.selMode==='intervalo'?'active':''}" onclick="setSelMode('intervalo')">Intervalo</div>
+            <div class="opt ${state.selMode==='manual'?'active':''}" onclick="setSelMode('manual')">Manual</div>
+          </div>
+        </div>
+        ${state.selMode==='intervalo' ? `
+          <div class="frow"><label>Desde</label>
+            <select class="selectbox" style="width:100%;" onchange="state.fromIdx=Math.min(Number(this.value),state.toIdx-1); render();">
+              ${STATIONS.map((c,i)=>`<option value="${i}" ${i===state.fromIdx?'selected':''}>${STATION_NAMES[c]}</option>`).join('')}
+            </select>
+          </div>
+          <div class="frow"><label>Hasta</label>
+            <select class="selectbox" style="width:100%;" onchange="state.toIdx=Math.max(Number(this.value),state.fromIdx+1); render();">
+              ${STATIONS.map((c,i)=>`<option value="${i}" ${i===state.toIdx?'selected':''}>${STATION_NAMES[c]}</option>`).join('')}
+            </select>
+          </div>` : `
+          <div class="frow"><label>Estaciones seleccionadas (clic en el mapa)</label>
+            <div style="font-size:11.5px; color:var(--text-dim);">${state.manualStations.length? state.manualStations.sort((a,b)=>a-b).map(i=>STATIONS[i]).join(', ') : 'Ninguna aún'}</div>
+          </div>`}
+        <div class="frow"><button class="chip" onclick="resetRange()">Ver línea completa</button></div>
+      </div>
+    </div>`;
+  setTimeout(ensureMap, 30);
+}
+function detailedLabel(){
+  const {start,end} = mapDateRange();
+  return fmtDate(start)+' — '+fmtDate(end);
+}
+
+/* ================= COMPARAR ================= */
+function setCmpCat(c){ state.cmpCat=c; render(); }
+function toggleCmpFilters(){ state.cmpFiltersOpen=!state.cmpFiltersOpen; render(); }
+function setCmpPeriodMode(m){ state.cmpPeriodMode=m; state.cmpPeriod='Todos'; render(); }
+function setCmpPeriod(p){ state.cmpPeriod=p; render(); }
+function openCmpCalendar(mode){ state.cmpCalMode = state.cmpCalMode===mode? null : mode; render(); }
+function cmpCalShift(delta){ let m=state.cmpCalViewMonth+delta, y=state.cmpCalViewYear; if(m<0){m=11;y--;} if(m>11){m=0;y++;} state.cmpCalViewMonth=m; state.cmpCalViewYear=y; render(); }
+function selCmpCalDay(y,m,d){ state.cmpCalDate=new Date(y,m,d); render(); }
+function cmpMonthsInRange(){
+  if(state.cmpPeriod && state.cmpPeriod!=='Todos'){
+    if(state.cmpPeriodMode==='trimestre'){ const q=Number(state.cmpPeriod.slice(1)); return [(q-1)*3,(q-1)*3+1,(q-1)*3+2]; }
+    const s=Number(state.cmpPeriod.slice(1)); return Array.from({length:6},(_,i)=>(s-1)*6+i);
+  }
+  if(state.cmpCalMode==='dia' && state.cmpCalDate){ return [state.cmpCalDate.getMonth()]; }
+  if(state.cmpCalMode==='semana' && state.cmpCalDate){ return [state.cmpCalDate.getMonth()]; }
+  return Array.from({length:12},(_,i)=>i);
+}
+function renderCmpCalendar(){
+  const y=state.cmpCalViewYear, m=state.cmpCalViewMonth;
+  const first=new Date(y,m,1); const startDow=(first.getDay()+6)%7;
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  let cells='', d=1;
+  for(let row=0; row<6 && d<=daysInMonth; row++){
+    cells += '<tr>';
+    for(let col=0; col<7; col++){
+      if(row===0 && col<startDow){ cells+='<td></td>'; }
+      else if(d>daysInMonth){ cells+='<td></td>'; }
+      else {
+        const sel = state.cmpCalDate && state.cmpCalDate.getFullYear()===y && state.cmpCalDate.getMonth()===m && state.cmpCalDate.getDate()===d;
+        cells += `<td><span class="calday ${sel?'sel':''}" onclick="selCmpCalDay(${y},${m},${d})">${d}</span></td>`;
+        d++;
+      }
+    }
+    cells+='</tr>';
+  }
+  return `<div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+    <button onclick="cmpCalShift(-1)" style="border:none; background:none; cursor:pointer; font-size:13px;">‹</button>
+    <b style="font-size:12px;">${monthNames[m]} ${y}</b>
+    <button onclick="cmpCalShift(1)" style="border:none; background:none; cursor:pointer; font-size:13px;">›</button>
+  </div>
+  <table class="calgrid"><thead><tr><th>L</th><th>M</th><th>W</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead><tbody>${cells}</tbody></table>`;
+}
+function renderComparar(){
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const monthsToShow = cmpMonthsInRange();
+  const fromIdx = Math.min(state.cmpFromIdx, state.cmpToIdx);
+  const toIdx = Math.max(state.cmpFromIdx, state.cmpToIdx);
+  function col(year){
+    let html='';
+    monthsToShow.forEach(m=>{
+      const start=new Date(year,m,1), end=new Date(year,m+1,0,23,59,59,999);
+      html += `<div class="cmp-month">${monthNames[m]}</div><div class="diagram-row">${renderLinearDiagram(start,end,fromIdx,toIdx,state.cmpCat,null)}</div>`;
+    });
+    return html;
+  }
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <div class="filters-toggle-row" style="margin-bottom:12px;">
+        <div><label style="font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase;">Período Base</label><br>
+          <select class="selectbox" onchange="state.cmpBaseYear=Number(this.value); render();">
+            <option value="2026" ${state.cmpBaseYear===2026?'selected':''}>2026</option><option value="2027" ${state.cmpBaseYear===2027?'selected':''}>2027</option>
+          </select></div>
+        <div><label style="font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase;">Período Comparativo</label><br>
+          <select class="selectbox" onchange="state.cmpCompYear=Number(this.value); render();">
+            <option value="2025" ${state.cmpCompYear===2025?'selected':''}>2025</option><option value="2026" ${state.cmpCompYear===2026?'selected':''}>2026</option><option value="2027" ${state.cmpCompYear===2027?'selected':''}>2027</option>
+          </select></div>
+        <div style="margin-left:auto; position:relative;">
+          <button class="filters-btn" onclick="toggleCmpFilters()">Filtros <span>${state.cmpFiltersOpen?'▲':'▼'}</span></button>
+          ${state.cmpFiltersOpen ? `
+          <div class="filters-dropdown">
+            <div class="filters-panel">
+              <div class="frow"><label>Ver por</label>
+                <div class="toggle2">
+                  <div class="opt ${state.cmpPeriodMode==='trimestre'?'active':''}" onclick="setCmpPeriodMode('trimestre')">Trimestre</div>
+                  <div class="opt ${state.cmpPeriodMode==='semestre'?'active':''}" onclick="setCmpPeriodMode('semestre')">Semestre</div>
+                </div>
+              </div>
+              <div class="frow"><label>${state.cmpPeriodMode==='trimestre'?'Trimestre':'Semestre'}</label>
+                <select class="selectbox" style="width:100%;" onchange="setCmpPeriod(this.value)">
+                  <option value="Todos">Todos</option>
+                  ${state.cmpPeriodMode==='trimestre'
+                    ? ['T1 (ENE-FEB-MAR)','T2 (ABR-MAY-JUN)','T3 (JUL-AGO-SEP)','T4 (OCT-NOV-DIC)'].map((l,i)=>`<option value="T${i+1}" ${state.cmpPeriod==='T'+(i+1)?'selected':''}>${l}</option>`).join('')
+                    : ['S1 (ENE-JUN)','S2 (JUL-DIC)'].map((l,i)=>`<option value="S${i+1}" ${state.cmpPeriod==='S'+(i+1)?'selected':''}>${l}</option>`).join('')}
+                </select>
+              </div>
+              <div class="frow"><label>Calendario</label>
+                <div class="toggle2">
+                  <div class="opt ${state.cmpCalMode==='semana'?'active':''}" onclick="openCmpCalendar('semana')">Semana</div>
+                  <div class="opt ${state.cmpCalMode==='dia'?'active':''}" onclick="openCmpCalendar('dia')">Día</div>
+                </div>
+                ${state.cmpCalMode ? renderCmpCalendar() : ''}
+              </div>
+              <div class="frow"><label>Intervalo de estaciones</label>
+                <div style="display:flex; gap:8px;">
+                  <div style="flex:1;"><div style="font-size:10px; color:var(--text-faint); margin-bottom:4px;">Desde</div>
+                    <select class="selectbox" style="width:100%;" onchange="state.cmpFromIdx=Number(this.value); render();">
+                      ${STATIONS.map((c,i)=>`<option value="${i}" ${i===state.cmpFromIdx?'selected':''}>${STATION_NAMES[c]}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div style="flex:1;"><div style="font-size:10px; color:var(--text-faint); margin-bottom:4px;">Hasta</div>
+                    <select class="selectbox" style="width:100%;" onchange="state.cmpToIdx=Number(this.value); render();">
+                      ${STATIONS.map((c,i)=>`<option value="${i}" ${i===state.cmpToIdx?'selected':''}>${STATION_NAMES[c]}</option>`).join('')}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>` : ''}
+        </div>
+      </div>
+      <div class="chip-row">
+        <div class="chip ${state.cmpCat==='Todos'?'active':''}" onclick="setCmpCat('Todos')">Todos</div>
+        <div class="chip ${state.cmpCat==='VIF'?'active':''}" onclick="setCmpCat('VIF')">🔵 VIF</div>
+        <div class="chip ${state.cmpCat==='SEN'?'active':''}" onclick="setCmpCat('SEN')">🟠 SEÑ</div>
+        <div class="chip ${state.cmpCat==='CAT'?'active':''}" onclick="setCmpCat('CAT')">🟢 CAT</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:16px; align-items:flex-start;">
+      <div class="cmp-col"><h2 style="font-size:13px; margin-bottom:8px;">Año ${state.cmpBaseYear}</h2>${col(state.cmpBaseYear)}</div>
+      <div class="cmp-col"><h2 style="font-size:13px; margin-bottom:8px;">Año ${state.cmpCompYear}</h2>${col(state.cmpCompYear)}</div>
+    </div>`;
+}
+
+/* ================= ACTIVOS / ACTIVIDADES ================= */
+function renderActivos(){
+  const list = ASSETS;
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <table class="data"><thead><tr><th>Código</th><th>Activo</th><th>Departamento</th><th>Estación</th><th>PK</th></tr></thead>
+      <tbody>${list.map(a=>`<tr onclick="openAsset('${a.codigo}')"><td class="code">${a.codigo}</td><td>${a.descripcion}</td><td>${a.dept}</td><td>${a.estacion}</td><td class="mono">${a.pkLabel}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+function renderActividades(){
+  const acts = allActivities();
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <table class="data"><thead><tr><th>Código</th><th>Descripción</th><th>Activo</th><th>Frecuencia</th><th>Estado</th><th>Responsable</th></tr></thead>
+      <tbody>${acts.slice(0,150).map(a=>`<tr onclick="openAsset('${a.asset.codigo}')"><td class="code">${a.codigo}</td><td>${a.descripcion}</td><td class="code">${a.codigoActivo}</td><td>${a.frecuencia}</td><td><span class="badge ${a.estado==='Ejecutada'?'ok':a.estado==='Retrasada'?'late':'warn'}">${a.estado}</span></td><td>${a.responsable}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+function renderStub(t){ document.getElementById('main').innerHTML = `<div class="panel"><div class="stub">🚧 ${t} — pendiente de definir estructura de datos.</div></div>`; }
+
+/* ================= ESTACIONES ================= */
+function setEstYear(y){ state.estYear=Number(y); render(); }
+function setEstCat(c){ state.estCat=c; render(); }
+function setEstStation(i){ state.estStationIdx=i; goSection('est-plano'); }
+function setEstPlanoLevel(l){ state.estPlanoLevel=l; render(); }
+function setEstPeriodMode(m){ state.estPeriodMode=m; state.estPeriod='Todos'; render(); }
+function setEstPeriod(p){ state.estPeriod=p; render(); }
+function estDateRange(){
+  const year = state.estYear;
+  let start,end;
+  if(state.estPeriod && state.estPeriod!=='Todos'){
+    if(state.estPeriodMode==='trimestre'){ const q=Number(state.estPeriod.slice(1)); start=new Date(year,(q-1)*3,1); end=new Date(year,q*3,0,23,59,59,999); }
+    else { const s=Number(state.estPeriod.slice(1)); start=new Date(year,(s-1)*6,1); end=new Date(year,s*6,0,23,59,59,999); }
+  } else { start=new Date(year,0,1); end=new Date(year,11,31,23,59,59,999); }
+  return {start,end};
+}
+
+function renderEstResumen(){
+  const year = state.estYear;
+  const acts = allStationActivities().filter(a=>a.fecha.getFullYear()===year);
+  const total = STATION_ASSETS.length;
+  const counts = {}; CAT_EST.forEach(c=>counts[c]=STATION_ASSETS.filter(a=>a.dept===c).length);
+  const cEst = e=>acts.filter(a=>a.estado===e).length;
+  const ejecutadas=cEst('Ejecutada'), programadas=cEst('Programada'), pendientes=cEst('Pendiente'), vencidas=cEst('Retrasada');
+  const cumplimiento = acts.length? ((ejecutadas/acts.length)*100).toFixed(1) : '0.0';
+
+  const R=38,CIRC=2*Math.PI*R; let off=0, arcs='';
+  CAT_EST.forEach(c=>{
+    const v=counts[c]; const len=total>0?(v/total)*CIRC:0;
+    arcs += `<circle cx="55" cy="55" r="${R}" fill="none" stroke="var(--${c.toLowerCase()})" stroke-width="14" stroke-dasharray="${len} ${CIRC-len}" stroke-dashoffset="${-off}" transform="rotate(-90 55 55)"/>`;
+    off+=len;
+  });
+
+  const stationLoad = STATIONS.map((s,i)=>({s,i,n: STATION_ASSETS.filter(a=>a.estacionIdx===i).reduce((n,a)=>n+a.activities.length,0)})).sort((a,b)=>b.n-a.n).slice(0,5);
+  const maxSL = Math.max(1,...stationLoad.map(x=>x.n));
+
+  const critAssets = STATION_ASSETS.map(a=>({...a, n:a.activities.length, worst:a.activities.some(x=>x.estado==='Retrasada')?'Vencida':(a.activities.some(x=>x.estado==='Pendiente')?'Próxima':'OK')})).sort((a,b)=>b.n-a.n).slice(0,6);
+
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <label style="font-size:10.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase;">Año</label>
+      <select class="selectbox" style="margin-top:6px;" onchange="setEstYear(this.value)">
+        <option value="2026" ${year===2026?'selected':''}>2026</option>
+        <option value="2027" ${year===2027?'selected':''}>2027</option>
+        <option value="2028" ${year===2028?'selected':''}>2028</option>
+      </select>
+    </div>
+    <div class="kpi-row c6">
+      <div class="kpi"><div class="l">Total Activos</div><div class="v">${total.toLocaleString()}</div><div class="sub">${CAT_EST.map(c=>c+' '+counts[c]).join(' · ')}</div></div>
+      <div class="kpi"><div class="l">Programadas</div><div class="v" style="color:var(--sub);">${programadas}</div></div>
+      <div class="kpi"><div class="l">Ejecutadas</div><div class="v" style="color:var(--ok);">${ejecutadas}</div><div class="sub">${cumplimiento}% cumplimiento</div></div>
+      <div class="kpi"><div class="l">Pendientes</div><div class="v" style="color:var(--warn);">${pendientes}</div></div>
+      <div class="kpi"><div class="l">Vencidas</div><div class="v" style="color:var(--late);">${vencidas}</div></div>
+      <div class="kpi"><div class="l">Cumplimiento</div><div class="v" style="color:var(--green);">${cumplimiento}%</div><div class="sub">Meta 90.0%</div></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="panel"><h2>Distribución por departamento</h2>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <svg width="100" height="100" viewBox="0 0 110 110">${arcs}<text x="55" y="59" text-anchor="middle" font-size="15" font-weight="700">${total}</text></svg>
+          <div style="font-size:11.5px; display:flex; flex-direction:column; gap:5px;">${CAT_EST.map(c=>`<span>${catMarkerInline(c)} ${c} ${counts[c]}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="panel"><h2>Estaciones con mayor carga</h2>
+        ${stationLoad.map(x=>`<div style="margin-bottom:9px;"><div style="font-size:11.5px; margin-bottom:3px;">${STATION_NAMES[STATIONS[x.i]]}</div><div style="background:var(--panel-alt); border-radius:4px; height:9px;"><div style="width:${(x.n/maxSL*100).toFixed(0)}%; height:100%; background:#2FA5D6; border-radius:4px;"></div></div><div style="font-size:10px; color:var(--text-faint); text-align:right;">${x.n} ots</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="panel"><h2>Activos críticos y mayor frecuencia</h2>
+      <table class="data"><thead><tr><th>Código</th><th>Departamento</th><th>Estación</th><th>Nivel/Zona</th><th>OTS</th><th>Estado</th></tr></thead>
+      <tbody>${critAssets.map(a=>`<tr onclick="openAssetModalObj(STATION_ASSETS.find(x=>x.codigo==='${a.codigo}'))"><td class="code">${a.codigo}</td><td>${a.dept}</td><td>${a.estacion}</td><td>${a.nivel} · ${a.zona}</td><td>${a.n}</td><td><span class="badge ${a.worst==='OK'?'ok':a.worst==='Próxima'?'warn':'late'}">${a.worst}</span></td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+let estLeafletMap=null;
+function ensureEstMap(){
+  const el = document.getElementById('estLeafletMap'); if(!el) return;
+  if(estLeafletMap){ estLeafletMap.remove(); estLeafletMap=null; }
+  estLeafletMap = L.map('estLeafletMap', {scrollWheelZoom:false}).setView([-12.11,-76.99], 11.3);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap', maxZoom:16}).addTo(estLeafletMap);
+  STATIONS.forEach((code,i)=>{
+    const marker = L.circleMarker(STATION_COORDS[i], {radius:8, color:'#fff', weight:2, fillColor:i===state.estStationIdx?'#1E8E5A':'#2F6FE4', fillOpacity:0.9}).addTo(estLeafletMap);
+    marker.bindTooltip(`<b>${code}</b> · ${STATION_NAMES[code]}`, {direction:'top'});
+    marker.on('click', ()=> setEstStation(i));
+  });
+}
+function renderEstSelector(){
+  const cardsHtml = STATIONS.map((code,i)=>{
+    const assets = STATION_ASSETS.filter(a=>a.estacionIdx===i);
+    const total = assets.reduce((n,a)=>n+a.activities.length,0);
+    const worst = assets.some(a=>a.activities.some(x=>x.estado==='Retrasada'))?'late':(assets.some(a=>a.activities.some(x=>x.estado==='Pendiente'))?'warn':'ok');
+    const wc = worst==='late'?'var(--late)':worst==='warn'?'var(--warn)':'var(--ok)';
+    return `<div class="kpi" style="cursor:pointer;" onclick="setEstStation(${i})">
+      <div class="top"><div class="icon" style="background:${wc}18; color:${wc};">🚉</div><div class="l">${code}</div></div>
+      <div class="v" style="font-size:14px;">${STATION_NAMES[code]}</div>
+      <div class="sub"><span>${total} ots</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('main').innerHTML = `
+    <div id="estLeafletMap" style="height:340px; border-radius:12px; overflow:hidden; border:1px solid var(--border); margin-bottom:16px;"></div>
+    <div class="panel"><h2>Selecciona una estación</h2>
+      <div class="kpi-row" style="grid-template-columns:repeat(auto-fill, minmax(150px,1fr));">${cardsHtml}</div>
+    </div>`;
+  setTimeout(ensureEstMap, 30);
+}
+
+function renderStationPlanoSvg(){
+  const idx = state.estStationIdx;
+  const {start,end} = estDateRange();
+  const levels = state.estPlanoLevel==='Todos' ? STATION_LEVELS : [state.estPlanoLevel];
+  const width=650, bandH=90, gap=18, zoneAreaX=95, zoneAreaW=width-zoneAreaX-25;
+  let svg='', y=16;
+  levels.forEach(level=>{
+    const zonas = STATION_ZONES[level];
+    const zw = zoneAreaW/zonas.length;
+    svg += `<rect x="10" y="${y}" width="${width-20}" height="${bandH}" rx="8" fill="var(--panel-alt)" stroke="var(--border)"/>`;
+    svg += `<text x="20" y="${y+bandH/2+4}" font-size="11" font-weight="700">${level}</text>`;
+    zonas.forEach((zona,zi)=>{
+      const zx = zoneAreaX+zi*zw;
+      if(zi>0) svg += `<line x1="${zx}" y1="${y+8}" x2="${zx}" y2="${y+bandH-8}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,2"/>`;
+      svg += `<text x="${zx+zw/2}" y="${y+14}" font-size="7.5" text-anchor="middle" fill="var(--text-faint)">${zona}</text>`;
+      const assets = STATION_ASSETS.filter(a=>a.estacionIdx===idx && a.nivel===level && a.zona===zona && (state.estCat==='Todos'||state.estCat===a.dept));
+      assets.forEach((a,ai)=>{
+        const matched = a.activities.filter(act=>act.fecha>=start && act.fecha<=end);
+        if(!matched.length) return;
+        const rank={Retrasada:3,Pendiente:2,Ejecutada:1}; let worst=null;
+        matched.forEach(m=>{ if(!worst||rank[m.estado]>rank[worst]) worst=m.estado; });
+        const r = 5+Math.min(6, matched.length);
+        const mx = zx+zw/2+(ai-(assets.length-1)/2)*16;
+        const my = y+bandH/2+16;
+        const color = deptShade(a.dept, worst);
+        const title = `${a.codigo} · ${zona} · ${a.dept} · ${worst}`;
+        svg += catMarker(a.dept, mx, my, r, color, `onmousemove="showTip(evt,'${title.replace(/'/g,"\\'")}')" onmouseleave="hideTip()" onclick="openAssetModalObj(STATION_ASSETS.find(x=>x.codigo==='${a.codigo}'))"`);
+      });
+    });
+    y += bandH+gap;
+  });
+  return `<svg width="100%" viewBox="0 0 ${width} ${y}" role="img">${svg}</svg>`;
+}
+function renderEstPlano(){
+  const idx = state.estStationIdx;
+  const code = STATIONS[idx];
+  document.getElementById('main').innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+      <div>
+        <div class="panel">
+          <h2>${STATION_NAMES[code]} (${code}) — Plano esquemático por niveles</h2>
+          <div class="chip-row">
+            <div class="chip ${state.estPlanoLevel==='Todos'?'active':''}" onclick="setEstPlanoLevel('Todos')">Todos los niveles</div>
+            ${STATION_LEVELS.map(l=>`<div class="chip ${state.estPlanoLevel===l?'active':''}" onclick="setEstPlanoLevel('${l}')">${l}</div>`).join('')}
+          </div>
+          <div class="chip-row">
+            <div class="chip ${state.estCat==='Todos'?'active':''}" onclick="setEstCat('Todos')">Todos</div>
+            ${CAT_EST.map(c=>`<div class="chip ${state.estCat===c?'active':''}" onclick="setEstCat('${c}')">${catMarkerInline(c)} ${c}</div>`).join('')}
+          </div>
+          ${renderStationPlanoSvg()}
+          <p class="hint">Cada figura representa un activo del nivel/zona; el tamaño indica la cantidad de actividades en el periodo, y el tono si está ejecutada (fuerte), pendiente (claro) o vencida (rojo). Haz clic para ver el detalle.</p>
+        </div>
+      </div>
+      <div class="filters-panel">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;">Filtros</div>
+        <div class="frow"><label>Estación</label>
+          <select class="selectbox" style="width:100%;" onchange="setEstStation(Number(this.value))">
+            ${STATIONS.map((c,i)=>`<option value="${i}" ${i===idx?'selected':''}>${STATION_NAMES[c]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="frow"><label>Año</label>
+          <select class="selectbox" style="width:100%;" onchange="setEstYear(this.value)">
+            <option value="2026" ${state.estYear===2026?'selected':''}>2026</option>
+            <option value="2027" ${state.estYear===2027?'selected':''}>2027</option>
+            <option value="2028" ${state.estYear===2028?'selected':''}>2028</option>
+          </select>
+        </div>
+        <div class="frow"><label>Ver por</label>
+          <div class="toggle2">
+            <div class="opt ${state.estPeriodMode==='trimestre'?'active':''}" onclick="setEstPeriodMode('trimestre')">Trimestre</div>
+            <div class="opt ${state.estPeriodMode==='semestre'?'active':''}" onclick="setEstPeriodMode('semestre')">Semestre</div>
+          </div>
+        </div>
+        <div class="frow"><label>${state.estPeriodMode==='trimestre'?'Trimestre':'Semestre'}</label>
+          <select class="selectbox" style="width:100%;" onchange="setEstPeriod(this.value)">
+            <option value="Todos">Todos</option>
+            ${state.estPeriodMode==='trimestre'
+              ? ['T1 (ENE-FEB-MAR)','T2 (ABR-MAY-JUN)','T3 (JUL-AGO-SEP)','T4 (OCT-NOV-DIC)'].map((l,i)=>`<option value="T${i+1}" ${state.estPeriod==='T'+(i+1)?'selected':''}>${l}</option>`).join('')
+              : ['S1 (ENE-JUN)','S2 (JUL-DIC)'].map((l,i)=>`<option value="S${i+1}" ${state.estPeriod==='S'+(i+1)?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderEstActivos(){
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <table class="data"><thead><tr><th>Código</th><th>Departamento</th><th>Estación</th><th>Nivel</th><th>Zona</th></tr></thead>
+      <tbody>${STATION_ASSETS.map(a=>`<tr onclick="openAssetModalObj(STATION_ASSETS.find(x=>x.codigo==='${a.codigo}'))"><td class="code">${a.codigo}</td><td>${a.dept}</td><td>${a.estacion}</td><td>${a.nivel}</td><td>${a.zona}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+function renderEstActividades(){
+  const acts = allStationActivities();
+  document.getElementById('main').innerHTML = `
+    <div class="panel">
+      <table class="data"><thead><tr><th>Código</th><th>Descripción</th><th>Activo</th><th>Frecuencia</th><th>Estado</th><th>Responsable</th></tr></thead>
+      <tbody>${acts.slice(0,200).map(a=>`<tr onclick="openAssetModalObj(STATION_ASSETS.find(x=>x.codigo==='${a.asset.codigo}'))"><td class="code">${a.codigo}</td><td>${a.descripcion}</td><td class="code">${a.codigoActivo}</td><td>${a.frecuencia}</td><td><span class="badge ${a.estado==='Ejecutada'?'ok':a.estado==='Retrasada'?'late':'warn'}">${a.estado}</span></td><td>${a.responsable}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+/* ================= ROUTER ================= */
+const TITLES = {dashboard:'Dashboard', resumen:'Resumen', mapa:'Vía Principal — Mapa', comparar:'Vía Principal — Comparar', activos:'Vía Principal — Activos', actividades:'Vía Principal — Actividades',
+  'est-resumen':'Estaciones — Resumen', 'est-selector':'Estaciones — Selector', 'est-plano':'Estaciones — Plano', 'est-activos':'Estaciones — Activos', 'est-actividades':'Estaciones — Actividades',
+  patios:'Patios', talleres:'Talleres'};
+function render(){
+  renderSidebar();
+  document.getElementById('pageTitle').textContent = TITLES[state.section] || state.section;
+  if(state.section==='dashboard') renderDashboard();
+  else if(state.section==='resumen') renderResumen();
+  else if(state.section==='mapa') renderMapa();
+  else if(state.section==='comparar') renderComparar();
+  else if(state.section==='activos') renderActivos();
+  else if(state.section==='actividades') renderActividades();
+  else if(state.section==='est-resumen') renderEstResumen();
+  else if(state.section==='est-selector') renderEstSelector();
+  else if(state.section==='est-plano') renderEstPlano();
+  else if(state.section==='est-activos') renderEstActivos();
+  else if(state.section==='est-actividades') renderEstActividades();
+  else renderStub(TITLES[state.section] || state.section);
+
+  if(state.modal){ renderAssetModal(); }
+}
+render();
+</script>
+</body>
+</html>
